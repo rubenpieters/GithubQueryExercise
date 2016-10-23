@@ -21,14 +21,13 @@ class GithubFutureInterpreter(implicit ec: ExecutionContext) extends (GithubApiD
 
   override def apply[A](fa: GithubApiDsl[A]): Future[A] = fa match {
     case ListIssues(owner, repo) =>
-      LoggerFactory.getLogger(getClass).debug(s"list issues owner: $owner repo: $repo")
+      LoggerFactory.getLogger(getClass).debug(s"get issues owner: $owner repo: $repo")
       client.getAndDecode[List[Issue]](s"https://api.github.com/repos/$owner/$repo/issues")
-    case GetComments(owner, repo, issue) =>
-      val number = 10
-      LoggerFactory.getLogger(getClass).debug(s"list issues owner: $owner repo: $repo issue: $issue")
-      client.getAndDecode[List[Comment]](s"https://api.github.com/repos/$owner/$repo/issues/$number/comments")
+    case GetComments(owner, repo, issueNr) =>
+      LoggerFactory.getLogger(getClass).debug(s"get comments owner: $owner repo: $repo issueNr: $issueNr")
+      client.getAndDecode[List[Comment]](s"https://api.github.com/repos/$owner/$repo/issues/$issueNr/comments")
     case GetUser(userRef: UserReference) =>
-      LoggerFactory.getLogger(getClass).debug(s"list issues userRef: $userRef")
+      LoggerFactory.getLogger(getClass).debug(s"get user userRef: $userRef")
       client.getAndDecode[User](s"https://api.github.com/user/$userRef")
   }
 

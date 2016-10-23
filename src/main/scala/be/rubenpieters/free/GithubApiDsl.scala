@@ -10,7 +10,7 @@ sealed trait GithubApiDsl[A]
 case class ListIssues(owner: Owner, repo: Repo)
   extends GithubApiDsl[GithubApiDslResult[List[Issue]]]
 
-case class GetComments(owner: Owner, repo: Repo, issue: Issue)
+case class GetComments(owner: Owner, repo: Repo, issue: IssueNumber)
   extends GithubApiDsl[GithubApiDslResult[List[Comment]]]
 
 case class GetUser(userRef: UserReference)

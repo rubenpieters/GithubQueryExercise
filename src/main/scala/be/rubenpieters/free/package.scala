@@ -10,4 +10,5 @@ package object free {
 
   type Owner = String
   type Repo = String
+  type IssueNumber = Long
 }
