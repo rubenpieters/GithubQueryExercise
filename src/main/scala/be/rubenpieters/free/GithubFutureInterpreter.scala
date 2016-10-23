@@ -6,6 +6,7 @@ import cats.~>
 import io.circe.Decoder
 import io.circe.generic.auto._
 import io.circe.parser._
+import play.api.libs.ws.WSResponse
 import play.api.libs.ws.ning.NingWSClient
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,13 +33,19 @@ class GithubFutureInterpreter(implicit ec: ExecutionContext) extends (GithubApiD
       client
         .url(url)
         .get()
-        .map( wsResponse =>
-          if (! (200 to 299).contains(wsResponse.status)) {
-            Xor.Left(new RuntimeException(s"Received unexpected status ${wsResponse.status} : ${wsResponse.body}"))
-          } else {
-            Xor.Right(wsResponse.body)
-          }
+        .map( wSResponse =>
+          for {
+            handledResp <- handleWsResponse(wSResponse)
+            decodedResp <- decode(handledResp)
+          } yield decodedResp
         )
-        .map(_.flatMap(decode[A]))
+  }
+
+  def handleWsResponse(wSResponse: WSResponse): Xor[Throwable, String] = {
+    if (! (200 to 299).contains(wSResponse.status)) {
+      Xor.Left(new RuntimeException(s"Received unexpected status ${wSResponse.status} : ${wSResponse.body}"))
+    } else {
+      Xor.Right(wSResponse.body)
+    }
   }
 }
