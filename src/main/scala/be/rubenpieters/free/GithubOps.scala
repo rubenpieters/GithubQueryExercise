@@ -1,7 +1,7 @@
 package be.rubenpieters.free
 
 import be.rubenpieters.model.github.{Comment, Issue, User, UserReference}
-import cats.data.{Xor, XorT}
+import cats.data.{Coproduct, Xor, XorT}
 import cats.free.{Free, FreeApplicative}
 import cats.implicits._
 import cats.{Applicative, Functor, Monad, ~>}
@@ -10,8 +10,9 @@ import cats.{Applicative, Functor, Monad, ~>}
   * Created by ruben on 23/10/2016.
   */
 class GithubOps {
+  // MONAD
+
   type GithubOpsFree[A] = Free[GithubApiDsl, A]
-  type GithubOpsFreeApp[A] = FreeApplicative[GithubApiDsl, A]
 
   def listIssues(owner: Owner, repo: Repo): GithubOpsFree[GithubApiDslResult[List[Issue]]] =
     Free.liftF(ListIssues(owner, repo))
@@ -42,6 +43,10 @@ class GithubOps {
     }: XorT[GithubOpsFree, Throwable, List[(Issue, List[(Comment, User)])]]
   } yield users
     ).value
+
+  // APPLICATIVE
+
+  type GithubOpsFreeApp[A] = FreeApplicative[GithubApiDsl, A]
 
   def listIssuesApp(owner: Owner, repo: Repo): GithubOpsFreeApp[GithubApiDslResult[List[Issue]]] =
     FreeApplicative.lift(ListIssues(owner, repo))
@@ -125,4 +130,51 @@ class GithubOps {
       p.foldMap(betterNat)
     }
   }
+
+  // COMBINED
+
+  type GithubCoproductFree[A] = Free[Coproduct[GithubOpsFree, GithubOpsFreeApp, ?], A]
+
+  def listIssuesCop(owner: Owner, repo: Repo): GithubCoproductFree[GithubApiDslResult[List[Issue]]] =
+    Free.liftF(Coproduct.left(listIssues(owner, repo)))
+
+  def getCommentsCop(owner: Owner, repo: Repo, issueNr: IssueNumber): GithubCoproductFree[GithubApiDslResult[List[Comment]]] =
+    Free.liftF(Coproduct.left(getComments(owner, repo, issueNr)))
+
+  def getUserCop(userRef: UserReference): GithubCoproductFree[GithubApiDslResult[User]] =
+    Free.liftF(Coproduct.left(getUser(userRef)))
+
+  def embed[A](p: GithubOpsFreeApp[A]): GithubCoproductFree[A] =
+    Free.liftF[Coproduct[GithubOpsFree, GithubOpsFreeApp, ?], A](Coproduct.right(p))
+
+  def mixedInterpreter[F[_]](freeInterp: GithubOpsFree ~> F, applInterp: GithubOpsFreeApp ~> F): Coproduct[GithubOpsFree, GithubOpsFreeApp, ?] ~> F =
+    freeInterp.or[GithubOpsFreeApp](applInterp)
+
+//  def run[F[_], A](p: GithubCoproductFree[A], interpreter: (Coproduct[GithubOpsFree, GithubOpsFreeApp, ?] ~> F))(implicit monad: Monad[F])
+//  : F[A] =
+//    p.foldMap(interpreter)
+
+//  def allUsersCop(owner: Owner, repo: Repo)
+//  : GithubCoproductFree[GithubApiDslResult[List[(Issue, List[(Comment, User)])]]] = (for {
+//    issues <- XorT[GithubCoproductFree, Throwable, List[Issue]](
+//      listIssuesCop(owner, repo))
+//
+//    issueComments <- embed {
+//      issues.traverse(issue =>
+//        XorT[GithubOpsFree, Throwable, List[Comment]](getComments(owner, repo, issue.number))
+//          .map((issue, _))
+//      ): XorT[GithubCoproductFree, Throwable, List[(Issue, List[Comment])]]
+//    }
+//
+//    users <- embed {
+//      issueComments.traverse { case (issue, comments) =>
+//        comments.traverse(comment =>
+//          XorT[GithubOpsFree, Throwable, User](getUser(comment.user))
+//            .map((comment, _))
+//        ).map((issue, _))
+//      }: XorT[GithubCoproductFree, Throwable, List[(Issue, List[(Comment, User)])]]
+//    }
+//  } yield users
+//    ).value
 }
+

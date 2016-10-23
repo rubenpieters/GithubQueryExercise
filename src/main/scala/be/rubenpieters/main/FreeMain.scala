@@ -6,8 +6,10 @@ import java.util.concurrent.{Executor, Executors}
 
 import be.rubenpieters.free.{GithubFutureInterpreter, GithubOps, TestGithubFutureInterpreter}
 import be.rubenpieters.model.github.{Comment, Issue, User, UserReference}
+import cats.data.Coproduct
+import cats.~>
 
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 
 /**
@@ -70,6 +72,21 @@ object FreeApplicativeSimulatedMainNoDuplicateUsers {
 
     val futureUsersResult = Await.result(futureUsers, 1.minute)
     println(futureUsersResult)
+  }
+}
+
+object CoproductSimulatedMainNoDuplicateUsers {
+  import SimulatedData._
+  def main(args: Array[String]) = {
+    implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(5))
+
+    val interpreterFree = new TestGithubFutureInterpreter(issues, comments, users)
+    val mapping: Map[UserReference, User] = Map.empty
+    val interpreterApp = new GithubOps().optimizeNat(mapping, interpreterFree)
+
+//    new GithubOps().mixedInterpreter(interpreterFree, interpreterApp)
+
+
   }
 }
 
