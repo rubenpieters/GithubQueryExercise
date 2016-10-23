@@ -2,6 +2,8 @@ scalaVersion := "2.11.8"
 
 val circeVersion = "0.5.4"
 
+resolvers += Resolver.sonatypeRepo("releases")
+
 libraryDependencies ++= Seq(
   "org.typelevel" %% "cats" % "0.7.2"
   ,"com.chuusai" %% "shapeless" % "2.3.2"
@@ -21,3 +23,4 @@ libraryDependencies ++= Seq(
 
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 addCompilerPlugin("com.milessabin" % "si2712fix-plugin" % "1.0.1" cross CrossVersion.full)
+addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.2")

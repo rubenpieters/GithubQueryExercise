@@ -46,7 +46,30 @@ object FreeApplicativeSimulatedMain {
 
     val futureComments = new GithubOps().getCommentsByListOfIssue("typelevel", "cats", futureIssuesResult.getOrElse(sys.error("error!"))).foldMap(interpreter)
     val futureCommentsResult = Await.result(futureComments, 1.minute)
-    println(futureCommentsResult)
+
+    val futureUsers = new GithubOps().addUserInfo(futureCommentsResult).foldMap(interpreter)
+    val futureUsersResult = Await.result(futureUsers, 1.minute)
+    println(futureUsersResult)
+  }
+}
+
+object FreeApplicativeSimulatedMainNoDuplicateUsers {
+  import SimulatedData._
+  def main(args: Array[String]) = {
+    implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(5))
+
+    val interpreter = new TestGithubFutureInterpreter(issues, comments, users)
+
+    val futureIssues = new GithubOps().listIssuesApp("typelevel", "cats").foldMap(interpreter)
+    val futureIssuesResult = Await.result(futureIssues, 1.minute)
+
+    val futureComments = new GithubOps().getCommentsByListOfIssue("typelevel", "cats", futureIssuesResult.getOrElse(sys.error("error!"))).foldMap(interpreter)
+    val futureCommentsResult = Await.result(futureComments, 1.minute)
+
+    val futureUsers = new GithubOps().interpretOpt(new GithubOps().addUserInfo(futureCommentsResult), interpreter)
+
+    val futureUsersResult = Await.result(futureUsers, 1.minute)
+    println(futureUsersResult)
   }
 }
 
