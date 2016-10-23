@@ -27,14 +27,14 @@ class GithubOps {
       listIssues(owner, repo))
 
     issueComments <-
-      issues.traverseU(issue =>
+      issues.traverse(issue =>
         XorT[GithubOpsFree, Throwable, List[Comment]](getComments(owner, repo, issue.number))
           .map((issue, _))
       ): XorT[GithubOpsFree, Throwable, List[(Issue, List[Comment])]]
 
     users <-
-      issueComments.traverseU { case (issue, comments) =>
-        comments.traverseU(comment =>
+      issueComments.traverse { case (issue, comments) =>
+        comments.traverse(comment =>
           XorT[GithubOpsFree, Throwable, User](getUser(comment.user))
             .map((comment, _))
         ).map((issue, _))
