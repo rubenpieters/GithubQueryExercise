@@ -50,4 +50,9 @@ class GithubOps {
 
   def getUserApp(userRef: UserReference): GithubOpsFreeApp[GithubApiDslResult[User]] =
     FreeApplicative.lift(GetUser(userRef))
+
+  def getCommentsByListOfIssue(owner: Owner, repo: Repo, issueList: List[Issue]) = {
+    issueList
+      .traverse(issue => getCommentsApp(owner, repo, issue.number))
+  }
 }
