@@ -1,11 +1,12 @@
 package be.rubenpieters.free
 
-import be.rubenpieters.model.github.{Issue, User, UserReference}
+import be.rubenpieters.model.github.{Comment, Issue, User, UserReference}
 import cats.data.Xor
 import cats.~>
 import io.circe.Decoder
 import io.circe.generic.auto._
 import io.circe.parser._
+import org.slf4j.LoggerFactory
 import play.api.libs.ws.WSResponse
 import play.api.libs.ws.ning.NingWSClient
 
@@ -20,11 +21,14 @@ class GithubFutureInterpreter(implicit ec: ExecutionContext) extends (GithubApiD
 
   override def apply[A](fa: GithubApiDsl[A]): Future[A] = fa match {
     case ListIssues(owner, repo) =>
+      LoggerFactory.getLogger(getClass).debug(s"list issues owner: $owner repo: $repo")
       client.getAndDecode[List[Issue]](s"https://api.github.com/repos/$owner/$repo/issues")
     case GetComments(owner, repo, issue) =>
       val number = 10
+      LoggerFactory.getLogger(getClass).debug(s"list issues owner: $owner repo: $repo issue: $issue")
       client.getAndDecode[List[Comment]](s"https://api.github.com/repos/$owner/$repo/issues/$number/comments")
     case GetUser(userRef: UserReference) =>
+      LoggerFactory.getLogger(getClass).debug(s"list issues userRef: $userRef")
       client.getAndDecode[User](s"https://api.github.com/user/$userRef")
   }
 

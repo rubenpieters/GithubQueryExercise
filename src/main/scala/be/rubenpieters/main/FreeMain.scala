@@ -16,7 +16,7 @@ object FreeMain {
   def main(args: Array[String]) = {
     implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(5))
 
-    val future = new GithubOps().listIssues("typelevel", "cats").foldMap(new GithubFutureInterpreter)
+    val future = new GithubOps().allUsers("typelevel", "cats").foldMap(new GithubFutureInterpreter)
     val futureResult = Await.result(future, 1.minute)
     println(futureResult)
   }

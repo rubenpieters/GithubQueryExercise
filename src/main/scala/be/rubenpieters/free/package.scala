@@ -10,6 +10,4 @@ package object free {
 
   type Owner = String
   type Repo = String
-  type Comment = String
-  type UserLogin = String
 }

@@ -19,6 +19,5 @@ libraryDependencies ++= Seq(
   ,"ch.qos.logback" % "logback-classic" % "1.1.7"
 )
 
-addCompilerPlugin(
-  "org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full
-)
+addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+addCompilerPlugin("com.milessabin" % "si2712fix-plugin" % "1.0.1" cross CrossVersion.full)

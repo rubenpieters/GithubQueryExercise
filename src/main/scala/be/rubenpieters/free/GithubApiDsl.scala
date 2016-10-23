@@ -1,6 +1,6 @@
 package be.rubenpieters.free
 
-import be.rubenpieters.model.github.{Issue, User, UserReference}
+import be.rubenpieters.model.github.{Comment, Issue, User, UserReference}
 
 /**
   * Created by ruben on 23/10/2016.
