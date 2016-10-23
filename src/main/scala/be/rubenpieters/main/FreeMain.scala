@@ -81,12 +81,11 @@ object CoproductSimulatedMainNoDuplicateUsers {
     implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(5))
 
     val interpreterFree = new TestGithubFutureInterpreter(issues, comments, users)
-    val mapping: Map[UserReference, User] = Map.empty
-    val interpreterApp = new GithubOps().optimizeNat(mapping, interpreterFree)
+    val interpreterApp = new GithubOps().interpretAppOpt(interpreterFree)
 
-//    new GithubOps().mixedInterpreter(interpreterFree, interpreterApp)
-
-
+    val future = new GithubOps().runCop(new GithubOps().getCommentsCop("typelevel", "cats", 1), interpreterFree, interpreterApp)
+    val futureResult = Await.result(future, 1.minute)
+    println(futureResult)
   }
 }
 
