@@ -19,7 +19,9 @@ object TaglessMain {
   def main(args: Array[String]) = {
     implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(5))
 
-    val future = GithubApi.allUsers("typelevel", "cats")(implicitly[Monad[Future]]).apply(new TestGithubFutureTaglessInterpreter(issues, comments, users))
+    val future = GithubApi.allUsers("typelevel", "cats")(implicitly[Monad[Future]]).apply(
+      new TestGithubFutureTaglessInterpreter(issues, comments, users) with CachedUsers[Future]
+    )
     val futureResult = Await.result(future, 1.minute)
     println(futureResult)
   }
