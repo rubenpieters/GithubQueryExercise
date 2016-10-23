@@ -24,6 +24,7 @@ object FreeMain {
 }
 
 object FreeSimulatedMain {
+  import SimulatedData._
   def main(args: Array[String]) = {
     implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(5))
 
@@ -31,8 +32,9 @@ object FreeSimulatedMain {
     val futureResult = Await.result(future, 1.minute)
     println(futureResult)
   }
+}
 
-  // data for simulation
+object SimulatedData {
   val issues = Map(
     ("typelevel", "cats") ->
       ((1 to 5).map(x => Issue(x, x, s"issue$x", UserReference(1))) ++
