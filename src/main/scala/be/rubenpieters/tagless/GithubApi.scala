@@ -27,6 +27,7 @@ object GithubApi {
       F.getUser(userRef)
   }
 
+
   def allUsers[F[_]](owner: Owner, repo: Repo)(implicit monad: Monad[F]): GithubApiAlg[F] => F[GithubApiResult[List[(Issue, List[(Comment, User)])]]] = alg => {
     (for {
       issues <- XorT[F, Throwable, List[Issue]](

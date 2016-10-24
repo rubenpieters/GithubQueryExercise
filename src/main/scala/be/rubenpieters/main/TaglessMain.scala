@@ -4,7 +4,7 @@ import cats.implicits._
 import java.util.concurrent.Executors
 
 import be.rubenpieters.model.github.UserReference
-import be.rubenpieters.tagless.GithubApi
+import be.rubenpieters.tagless.{GithubApi, Optimizer, TestGithubFutureTaglessInterpreter}
 import cats.Monad
 
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -20,7 +20,7 @@ object TaglessMain {
     implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(5))
 
     val future = GithubApi.allUsers("typelevel", "cats")(implicitly[Monad[Future]]).apply(
-      new TestGithubFutureTaglessInterpreter(issues, comments, users) with CachedUsers[Future]
+      Optimizer.cachedUsers(new TestGithubFutureTaglessInterpreter(issues, comments, users), users)
     )
     val futureResult = Await.result(future, 1.minute)
     println(futureResult)

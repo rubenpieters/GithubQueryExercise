@@ -1,9 +1,8 @@
-package be.rubenpieters.main
+package be.rubenpieters.tagless
 
 import be.rubenpieters.free.{IssueNumber, Owner, Repo}
 import be.rubenpieters.model.github.{Comment, Issue, User, UserReference}
 import be.rubenpieters.tagless.GithubApi.GithubApiResult
-import be.rubenpieters.tagless.GithubApiAlg
 import cats.Monad
 import cats.data.Xor
 import org.slf4j.LoggerFactory
@@ -41,13 +40,18 @@ class TestGithubFutureTaglessInterpreter(
   }
 }
 
-// if we impl it with a def where we return a new interp with the function replaced it will work, plus it looks more similar to the free m/app example
-/*trait CachedUsers[F[_]] { self: GithubApiAlg[F] =>
-  val userCache: Map[UserReference, User] = Map.empty
+object Optimizer {
+  def cachedUsers[F[_] : Monad](alg: GithubApiAlg[F], mapping: Map[UserReference, User]) = new GithubApiAlg[F] {
+    val userCache: Map[UserReference, User] = mapping
 
-  def getUser(userRef: UserReference): F[GithubApiResult[User]] =
-    userCache.get(userRef) match {
-      case Some(user) => Monad[F].pure(Xor.Right(user))
-      case None => self.getUser(userRef)
-    }
-}*/
+    override def listIssues(owner: Owner, repo: Repo): F[GithubApiResult[List[Issue]]] = alg.listIssues(owner, repo)
+
+    override def getUser(userRef: UserReference): F[GithubApiResult[User]] =
+        userCache.get(userRef) match {
+          case Some(user) => Monad[F].pure(Xor.Right(user))
+          case None => alg.getUser(userRef)
+        }
+
+    override def getComments(owner: Owner, repo: Repo, issueNr: IssueNumber): F[GithubApiResult[List[Comment]]] = alg.getComments(owner, repo, issueNr)
+  }
+}

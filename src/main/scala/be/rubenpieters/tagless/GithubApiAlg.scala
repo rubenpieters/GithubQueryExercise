@@ -9,6 +9,6 @@ import be.rubenpieters.tagless.GithubApi.GithubApiResult
   */
 trait GithubApiAlg[F[_]] {
   def listIssues(owner: Owner, repo: Repo): F[GithubApiResult[List[Issue]]]
-  def getComments(owner: Owner, repo: Repo, issue: IssueNumber): F[GithubApiResult[List[Comment]]]
+  def getComments(owner: Owner, repo: Repo, issueNr: IssueNumber): F[GithubApiResult[List[Comment]]]
   def getUser(userRef: UserReference): F[GithubApiResult[User]]
 }
